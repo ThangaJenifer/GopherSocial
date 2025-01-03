@@ -184,8 +184,8 @@ So if content = "" if we take pointer to it then it is null. So while updating w
 pointers so that can be nullable *string. default value of pointer empty string in go is null
 */
 type UpdatePostPayload struct {
-	Title   *string `json:"title" validate:"omitempty,max=1000`
-	Content *string `json:"content" validate:"omitempty,max=1000`
+	Title   *string `json:"title" validate:"omitempty,max=100"`
+	Content *string `json:"content" validate:"omitempty,max=1000"`
 }
 
 // UpdatePost godoc

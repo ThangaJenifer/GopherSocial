@@ -3,8 +3,7 @@ package cache
 import (
 	"context"
 	"social/internal/store"
-
-	"github.com/stretchr/testify/mock" //ex 63 spies package
+	//ex 63 spies package
 )
 
 //ex 62 created mockstore for cache and MockUserstore with its interface methods
@@ -17,7 +16,7 @@ func NewMockStore() Storage {
 }
 
 type MockUserStore struct {
-	mock.Mock
+	//mock.Mock
 }
 
 func (m MockUserStore) Get(ctx context.Context, id int64) (*store.User, error) {
