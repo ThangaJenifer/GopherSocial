@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/ThangaJenifer/GopherSocial/compare/v1.0.0...v1.1.0) (2025-01-03)
+
+
+### Features
+
+* update api version automatically ([240cb1e](https://github.com/ThangaJenifer/GopherSocial/commit/240cb1ea002079ff5348ba6004d3dc16a104282b))
+
 ## 1.0.0 (2025-01-03)
 
 
