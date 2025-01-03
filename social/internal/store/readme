@@ -1,0 +1,18 @@
+We can use below sqlboiler and sqlx packages to get models and implementations of mysql methods
+Also we can use GORM for doing implementations and models
+
+https://github.com/volatiletech/sqlboiler
+
+https://github.com/jmoiron/sqlx
+
+Exercise 36 - SQL Indexing
+- Very good article where author learn about the SQL indexing
+
+https://niallburkley.com/blog/index-columns-for-like-in-postgres/
+
+- Introduction to SQL Indexing
+https://www.postgresql.org/docs/13/indexes-intro.html
+
+- https://www.postgresql.org/docs/9.5/pgtrgm.html
+postgres document for full text search indexing
+

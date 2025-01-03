@@ -1,0 +1,9 @@
+Ex 59 - Redis docker image to run
+docker run -d --rm --name social-redis -p 6379:6379 redis:6.2-alpine redis-server --loglevel warning
+
+-Get inside the container and check the keys of redis-server
+docker exec -it 9eea07481d2c redis-cli KEYS "*"
+
+-Check the value of the key
+docker exec -it 9eea07481d2c redis-cli GET user-106
+

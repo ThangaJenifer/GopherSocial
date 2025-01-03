@@ -1,0 +1,145 @@
+### Code Overview
+
+This Go snippet implements a **Fixed Window Rate Limiter**. Rate limiting is a mechanism to restrict the number of requests an entity (like a user or IP address) can make within a specific time window. This prevents abuse or overuse of a resource.
+
+---
+
+### Key Components in the Code
+
+#### Struct Definition: `FixedWindowRateLimiter`
+```go
+type FixedWindowRateLimiter struct {
+	sync.RWMutex
+	clients map[string]int
+	limit   int
+	window  time.Duration
+}
+```
+The `FixedWindowRateLimiter` struct contains:
+1. **`sync.RWMutex`**:
+   - Protects shared data (`clients`) from concurrent read/write operations.
+   - `RLock`/`RUnlock` for read access and `Lock`/`Unlock` for write access.
+
+2. **`clients map[string]int`**:
+   - Keeps track of how many requests each client (identified by their `ip`) has made within the current window.
+
+3. **`limit int`**:
+   - Specifies the maximum number of allowed requests per window per client.
+
+4. **`window time.Duration`**:
+   - The fixed time window duration for which requests are counted.
+
+---
+
+#### Constructor: `NewFixedWindowLimiter`
+```go
+func NewFixedWindowLimiter(limit int, window time.Duration) *FixedWindowRateLimiter {
+	return &FixedWindowRateLimiter{
+		clients: make(map[string]int),
+		limit:   limit,
+		window:  window,
+	}
+}
+```
+- This function creates and initializes a new `FixedWindowRateLimiter` instance.
+- The `clients` map starts empty, the `limit` is the number of allowed requests, and `window` sets the duration of the rate-limiting window.
+
+---
+
+#### Rate Limiting: `Allow`
+```go
+func (rl *FixedWindowRateLimiter) Allow(ip string) (bool, time.Duration) {
+	rl.RLock()
+	count, exists := rl.clients[ip]
+	rl.RUnlock()
+
+	if !exists || count < rl.limit {
+		rl.Lock()
+		if !exists {
+			go rl.resetCount(ip)
+		}
+
+		rl.clients[ip]++
+		rl.Unlock()
+		return true, 0
+	}
+
+	return false, rl.window
+}
+```
+1. **Step 1: Check the Current Count**
+   - The `Allow` method checks if the `ip` exists in the `clients` map using a **read lock (`RLock`)**.
+   - If the client exists, it retrieves the current request count (`count`). If not, the `exists` flag is `false`.
+
+2. **Step 2: Evaluate Request**
+   - If the client does not exist (`!exists`) or their request count is below the limit (`count < rl.limit`), the request is **allowed**.
+   - The function switches to a **write lock (`Lock`)** to safely update the shared `clients` map:
+     - If the client is new, it starts a goroutine (`go rl.resetCount(ip)`) to reset their request count after the window expires.
+     - The request count for the client is incremented.
+
+3. **Step 3: Deny Requests**
+   - If the client's request count exceeds the limit, the request is denied, and the method returns `false` along with the remaining duration of the window.
+
+---
+
+#### Reset Request Count: `resetCount`
+```go
+func (rl *FixedWindowRateLimiter) resetCount(ip string) {
+	time.Sleep(rl.window)
+	rl.Lock()
+	delete(rl.clients, ip)
+	rl.Unlock()
+}
+```
+- This method resets the request count for a specific `ip` after the current time window ends.
+- It:
+  1. Sleeps for the duration of the `window`.
+  2. Acquires a write lock (`Lock`) to safely remove the `ip` entry from the `clients` map.
+
+---
+
+### Workflow Example
+
+1. **Initialization**:
+   ```go
+   rl := NewFixedWindowLimiter(5, 10*time.Second)
+   ```
+   - A new limiter is created with a maximum of 5 requests allowed per 10-second window.
+
+2. **First Request**:
+   ```go
+   rl.Allow("192.168.0.1") // returns (true, 0)
+   ```
+   - The IP `"192.168.0.1"` is not in the map, so it's added, and its count is incremented to `1`.
+   - A goroutine starts to reset the count for `"192.168.0.1"` after 10 seconds.
+
+3. **Subsequent Requests**:
+   - For the next 4 requests, the IP is allowed (`true`) as long as the count is less than 5.
+
+4. **Exceeding Limit**:
+   - On the 6th request within 10 seconds, the method denies access (`false`) and returns the remaining time of the current window.
+
+5. **Reset After Window**:
+   - After 10 seconds, the `resetCount` goroutine removes the `"192.168.0.1"` entry from the map, allowing it to start over in the next window.
+
+---
+
+### **Reset Count Method (`resetCount`)**
+
+- Purpose: It ensures that after a fixed time window (`rl.window`), the request count for the IP address is reset, enabling the IP to make new requests.
+- How It Works:
+  1. Waits (`time.Sleep`) for the duration of the window.
+  2. Locks the map (`Lock`) to safely remove the IP entry.
+  3. Deletes the IP from the `clients` map.
+
+---
+
+### Summary
+
+- This rate limiter uses the **Fixed Window Algorithm**.
+- It works by:
+  - Tracking the number of requests per client/IP within a fixed time window.
+  - Allowing or denying requests based on a pre-set limit.
+  - Automatically resetting counts after the window ends using goroutines.
+
+This implementation is efficient for scenarios with low concurrency. However, for highly concurrent or distributed systems, you might consider more advanced algorithms like **Sliding Window** or distributed rate-limiting tools like Redis.
