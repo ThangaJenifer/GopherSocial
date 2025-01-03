@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/ThangaJenifer/GopherSocial/compare/v1.1.0...v1.2.0) (2025-01-03)
+
+
+### Features
+
+* just a change ([574903c](https://github.com/ThangaJenifer/GopherSocial/commit/574903c15ca480324f053c13cde56e4daf50320b))
+
 ## [1.1.0](https://github.com/ThangaJenifer/GopherSocial/compare/v1.0.0...v1.1.0) (2025-01-03)
 
 
